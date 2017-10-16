@@ -13,3 +13,16 @@ class Message(ndb.Model):
 	body = ndb.TextProperty()
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
+	user = ndb.KeyProperty(kind='User')
+	category = ndb.KeyProperty(kind='Category')
+
+class MessageReceipt(ndb.Model):
+	user = ndb.KeyProperty(kind='User')
+	message = ndb.KeyProperty(kind='Message')
+	date_created = ndb.DateTimeProperty(auto_now_add=True)
+	date_updated = ndb.DateTimeProperty(auto_now_add=True)
+
+class Category(ndb.Model):
+	title = ndb.StringProperty(required=True)
+	date_created = ndb.DateTimeProperty(auto_now_add=True)
+	date_updated = ndb.DateTimeProperty(auto_now_add=True)
