@@ -8,6 +8,10 @@ class User(ndb.Model):
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
 
+	@classmethod
+	def make_key(cls, id):
+		return ndb.Key(cls, id)
+
 class Message(ndb.Model):
 	subject = ndb.StringProperty()
 	body = ndb.TextProperty()
@@ -24,5 +28,11 @@ class MessageReceipt(ndb.Model):
 
 class Category(ndb.Model):
 	title = ndb.StringProperty(required=True)
+	date_created = ndb.DateTimeProperty(auto_now_add=True)
+	date_updated = ndb.DateTimeProperty(auto_now_add=True)
+
+class Session(ndb.Model):
+	access_token = ndb.StringProperty(required=True)
+	user = ndb.KeyProperty(kind='User')
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
