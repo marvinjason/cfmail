@@ -7,3 +7,9 @@ class User(ndb.Model):
 	password = ndb.StringProperty(required=True)
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
+
+class Message(ndb.Model):
+	subject = ndb.StringProperty()
+	body = ndb.TextProperty()
+	date_created = ndb.DateTimeProperty(auto_now_add=True)
+	date_updated = ndb.DateTimeProperty(auto_now_add=True)
