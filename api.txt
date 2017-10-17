@@ -1,0 +1,28 @@
+Routes                  Methods                 Description
+---------------------------------------------------------------------
+/users                  POST                    register
+/users/id               GET                     profile
+/users/id               PUT                     update profile
+/sessions               POST                    login
+
+    1 session
+
+/sessions               DELETE                  logout
+/users/id/messages      GET                     retrieve user's messages
+/users/id/messages      POST                    compose user message
+
+    1 message
+        x message_receipts
+
+/users/id/messages/id   GET                     retrieve message
+/users/id/messages/id   DELETE                  delete message
+/users/id/messages/id   POST                    reply
+
+
+?filter=(drafts/sent/inbox/trash)
+?page=1
+
+20 messages per page
+
+
+filters, sorts, pagination, search, forward

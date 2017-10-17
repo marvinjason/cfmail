@@ -11,7 +11,6 @@ def is_authenticated():
             return session
     return False
 
-
 users = Blueprint('users', __name__)
 
 @users.route('/users', methods=['POST'])
@@ -51,7 +50,7 @@ def update(id):
             if request.form['first_name']:
                 user.first_name = request.form['first_name']
             if request.form['password']:
-                user.password = request.form['password']
+                user.password = bcrypt.hashpw(request.form['password'], bcrypt.gensalt())
             user.put()
             response = {
                 'id': user.key.id(),
@@ -80,14 +79,15 @@ def destroy(id):
 
     return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
 
-sessions = Blueprint('sessions',__name__)
-@sessions.route('/sessions',methods=['POST'])
-def createj():
+sessions = Blueprint('sessions', __name__)
+
+@sessions.route('/sessions', methods=['POST'])
+def create():
     email = request.form['email']
     password = request.form['password']
+    user = User.query(User.email == email).get()
 
-    user = User.query(User.email == email  ).get()
-    if bcrypt.hashpw(password, user.password) == user.password:
+    if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(access_token=str(uuid4()), user=user.key)
         session.put()
         response = {
