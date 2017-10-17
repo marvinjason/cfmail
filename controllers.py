@@ -1,7 +1,7 @@
-from flask import Blueprint, request, jsonify
-from models import User, Session
+from datetime import datetime
+from flask import Blueprint, jsonify, request
+from models import Message, MessageReceipt, Session, User
 from pybcrypt import bcrypt
-from uuid import uuid4
 
 def is_authenticated():
     access_token = request.args.get('access_token')
@@ -13,6 +13,10 @@ def is_authenticated():
 
 users = Blueprint('users', __name__)
 
+@users.route('/users')
+def index():
+	return 'user'
+    
 @users.route('/users', methods=['POST'])
 def create():
     user = User()
@@ -86,7 +90,7 @@ def create():
     email = request.form['email']
     password = request.form['password']
     user = User.query(User.email == email).get()
-
+    
     if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(access_token=str(uuid4()), user=user.key)
         session.put()
