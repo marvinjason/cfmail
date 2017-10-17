@@ -104,3 +104,20 @@ def create():
         return jsonify(response)
 
     return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+
+messages = Blueprint('messages',__name__)
+
+@messages.route('/users/<id>/messages',methods=["GET"])
+def index():
+    session = is_authenticated()
+    if session:
+        filter = request.args.get('filter')
+        page = request.args.get('page')
+        received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch()
+        if received:
+            messages = Message.query(received.message_id).fetch(20,(page - 1)*20)
+            return jsonify([k.to_dict() for k in messages])
+
+        return jsonify({'error': {'status': 404, 'message': 'messages not found'}}), 404
+
+
