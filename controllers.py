@@ -5,10 +5,10 @@ from uuid import uuid4
 
 def is_authenticated():
     access_token = request.args.get('access_token')
-    if access_token is not None:
-        count = Session.query(Session.access_token == access_token).count()
-        if count > 0:
-            return True
+    if access_token:
+        session = Session.query(Session.access_token == access_token).get()
+        if session:
+            return session
     return False
 
 users = Blueprint('users', __name__)
@@ -41,21 +41,31 @@ def show(id):
 
 @users.route('/users/<id>', methods=['PUT'])
 def update(id):
-    if is_authenticated():
-        access_token = request.args.get('access_token')
-        session = Session.query(Session.access_token == access_token).fetch()[0]
-
+    session = is_authenticated()
+    if session:
         if session.user.id() == int(id):
-            pass
+            user = session.user.get()
+            if request.form['last_name']:
+                user.last_name = request.form['last_name']
+            if request.form['first_name']:
+                user.first_name = request.form['first_name']
+            if request.form['password']:
+                user.password = request.form['password']
+            user.put()
+            response = {
+                'id': user.key.id(),
+                'last_name': user.last_name,
+                'first_name': user.first_name,
+                'email': user.email
+            }
+            return jsonify(response)
 
     return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
 
 @users.route('/users/<id>', methods=['DELETE'])
 def destroy(id):
-    if is_authenticated():
-        access_token = request.args.get('access_token')
-        session = Session.query(Session.access_token == access_token).fetch()[0]
-
+    session = is_authenticated()
+    if session:
         if session.user.id() == int(id):
             user = session.user.get()
             response = {
