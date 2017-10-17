@@ -6,10 +6,11 @@ from uuid import uuid4
 def is_authenticated():
     access_token = request.args.get('access_token')
     if access_token:
-        session = Session.query(Session.access_token == access_token).get()
+        session = Session.query(Session.access_token == access_token ).get()
         if session:
             return session
     return False
+
 
 users = Blueprint('users', __name__)
 
@@ -21,13 +22,13 @@ def create():
     user.email = request.form['email']
     user.password = bcrypt.hashpw(request.form['password'], bcrypt.gensalt())
     user.put()
-    session = Session(access_token=str(uuid4()), user=user.key).put()
+
     return jsonify({
         'id': user.key.id(),
         'last_name': user.last_name,
         'first_name': user.first_name,
         'email': user.email,
-        'access_token': session.get().access_token
+
     })
 
 @users.route('/users/<id>', methods=['GET'])
@@ -76,5 +77,26 @@ def destroy(id):
             }
             user.key.delete()
             return jsonify(response)
+
+    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+
+sessions = Blueprint('sessions',__name__)
+@sessions.route('/sessions',methods=['POST'])
+def createj():
+    email = request.form['email']
+    password = request.form['password']
+
+    user = User.query(User.email == email  ).get()
+    if bcrypt.hashpw(password, user.password) == user.password:
+        session = Session(access_token=str(uuid4()), user=user.key)
+        session.put()
+        response = {
+            'id': user.key.id(),
+            'last_name': user.last_name,
+            'first_name': user.first_name,
+            'email': user.email,
+            'access_token': session.access_token
+        }
+        return jsonify(response)
 
     return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
