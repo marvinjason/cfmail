@@ -90,7 +90,7 @@ def create():
     email = request.form['email']
     password = request.form['password']
     user = User.query(User.email == email).get()
-    
+
     if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(access_token=str(uuid4()), user=user.key)
         session.put()
@@ -101,6 +101,24 @@ def create():
             'email': user.email,
             'access_token': session.access_token
         }
+        return jsonify(response)
+
+    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+
+@sessions.route('/sessions', methods=['DELETE'])
+def destroy():
+    session = is_authenticated()
+
+    if session:
+        user = session.user.get()
+        response = {
+            'id': user.key.id(),
+            'last_name': user.last_name,
+            'first_name': user.first_name,
+            'email': user.email,
+            'access_token': session.access_token
+        }
+        session.key.delete()
         return jsonify(response)
 
     return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
