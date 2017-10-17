@@ -19,20 +19,26 @@ def index():
     
 @users.route('/users', methods=['POST'])
 def create():
+    form = request.form
+
+    if User.exists(form['username']):
+        raise KeyError("")
+    
     user = User()
-    user.last_name = request.form['last_name']
-    user.first_name = request.form['first_name']
-    user.email = request.form['email']
-    user.password = bcrypt.hashpw(request.form['password'], bcrypt.gensalt())
+    user.username = form.get('username', '')
+    user.password = bcrypt.hashpw(form['password'], bcrypt.gensalt())
+    user.first_name = form.get('first_name', '')
+    user.middle_name = form.get('middle_name', '')
+    user.last_name = form.get('last_name', '')
+    user.sex = form.get('sex', '')
+    user.birthdate = form.get('birthdate', '')
+    user.contact_number = form.get('contact_number', '')
+    user.address = form['address']
+    user.postal_code = form['postal_code']
+    user.country = form['country']
     user.put()
 
-    return jsonify({
-        'id': user.key.id(),
-        'last_name': user.last_name,
-        'first_name': user.first_name,
-        'email': user.email,
-
-    })
+    return jsonify(user.serialize())
 
 @users.route('/users/<id>', methods=['GET'])
 def show(id):
