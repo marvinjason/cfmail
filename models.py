@@ -38,7 +38,7 @@ class User(ndb.Model):
 			'username': self.username,
 			'email': self.email,
 			'password': self.password,
-			'datetime_created': self.date_created,
+			'datetime_created': self.datetime_created,
 			'datetime_updated': self.datetime_updated,
 			'first_name': self.first_name,
 			'middle_name': self.middle_name,

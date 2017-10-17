@@ -1,3 +1,4 @@
+from constants import get_status_code
 from datetime import datetime
 from flask import Blueprint, jsonify, request
 from models import Message, MessageReceipt, Session, User
@@ -22,7 +23,7 @@ def create():
     form = request.form
 
     if User.exists(form['username']):
-        raise KeyError("")
+        return get_status_code(400)
     
     user = User()
     user.username = form.get('username', '')
@@ -31,11 +32,11 @@ def create():
     user.middle_name = form.get('middle_name', '')
     user.last_name = form.get('last_name', '')
     user.sex = form.get('sex', '')
-    user.birthdate = form.get('birthdate', '')
+    user.birthdate = datetime.strptime(form['birthdate'], '%M/%d/%Y')
     user.contact_number = form.get('contact_number', '')
-    user.address = form['address']
-    user.postal_code = form['postal_code']
-    user.country = form['country']
+    user.address = form.get('address', '')
+    user.postal_code = form.get('postal_code', '')
+    user.country = form.get('country', '')
     user.put()
 
     return jsonify(user.serialize())
