@@ -28,21 +28,25 @@ def index():
 
 @users.route('/users', methods=['POST'])
 def create():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    if User.exists(data['username']):
+        if User.exists(data['username']):
+            return get_status_code(400)
+        
+        user = User()
+        
+        for k, v in data.iteritems():
+            v = (bcrypt.hashpw(v, bcrypt.gensalt()) if k == 'password'
+                else datetime.strptime(v, '%M/%d/%Y').date() if k == 'birthdate'
+                else v)
+
+            exec("user.{0} = v".format(k))
+
+        user.put()
+    except:
         return get_status_code(400)
-    
-    user = User()
-    
-    for k, v in data.iteritems():
-        v = (bcrypt.hashpw(v, bcrypt.gensalt()) if k == 'password'
-             else datetime.strptime(v, '%M/%d/%Y').date() if k == 'birthdate'
-             else v)
 
-        exec("user.{0} = v".format(k))
-
-    user.put()
     return jsonify(user.serialize())
 
 
@@ -140,10 +144,10 @@ def index(id):
             return jsonify([k.to_dict() for k in messages])
     return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
 
-@messages.route('/users/<id>/messages/<id>', methods=['GET'])
-def index(id):
+@messages.route('/users/<user_id>/messages/<message_id>', methods=['GET'])
+def show(user_id, message_id):
     session = is_authenticated()
-    if session and session.user.id() == id:
+    if session and session.user.id() == user_id:
 
         return jsonify({'error': {'status': 404, 'message': 'messages not found'}}), 404
 

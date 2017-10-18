@@ -3,7 +3,6 @@ from google.appengine.ext import ndb
 from pybcrypt import bcrypt
 from pycountry import countries
 from uuid import uuid4
-from uuid import getnode as get_mac
 
 
 
@@ -21,7 +20,7 @@ class User(ndb.Model):
 	middle_name = ndb.StringProperty(required=True)
 	last_name = ndb.StringProperty(required=True)
 	sex = ndb.StringProperty(required=True, choices=SEXES)
-	birthdate = ndb.DateProperty()
+	birthdate = ndb.DateProperty(required=True)
 	age = ndb.ComputedProperty(lambda self: datetime.now().year - self.birthdate.year - ((datetime.now().month, datetime.now().day) < (self.birthdate.month, self.birthdate.day)))
 	contact_number = ndb.StringProperty()
 	address = ndb.StringProperty(required=True)
@@ -36,9 +35,8 @@ class User(ndb.Model):
 	def exists(cls, username):
 		return cls.query(cls.username == username).count() > 0
 
-	def serialize(self, include=None, exclude=None):
-		serialized = {
-			'id': self.key.id(),
+	def serialize(self):
+		return {
 			'username': self.username,
 			'email': self.email,
 			'password': self.password,
@@ -55,14 +53,6 @@ class User(ndb.Model):
 			'postal_code': self.postal_code,
 			'country': self.country
 		}
-
-		if include != None and exclude != None:
-			raise KeyError("Cannot use both 'include' and 'exclude' parameters.")
-
-		return {k: v for k, v in serialized.iteritems()
-				if (include == None and exclude == None)
-				or (include == None and not k in exclude)
-				or (exclude == None and k in include)}
 	
 	
 class Message(ndb.Model):
@@ -72,22 +62,13 @@ class Message(ndb.Model):
 	subject = ndb.StringProperty()
 	body = ndb.StringProperty()
 
-	def serialize(self, include=None, exclude=None):
-		serialized = {
-			'id': self.key.id(),
+	def serialize(self):
+		return {
 			'datetime_created': self.date_created,
 			'from_recipient': self.from_recipient,
 			'subject': self.subject,
 			'body': self.body
 		}
-
-		if include != None and exclude != None:
-			raise KeyError("Cannot use both 'include' and 'exclude' parameters.")
-
-		return {k: v for k, v in serialized.iteritems()
-				if (include == None and exclude == None)
-				or (include == None and not k in exclude)
-				or (exclude == None and k in include)}
 	
 	
 class MessageReceipt(ndb.Model):
@@ -100,9 +81,8 @@ class MessageReceipt(ndb.Model):
 	category = ndb.StringProperty(default=CATEGORIES[0], choices=CATEGORIES)
 	seen_status = ndb.BooleanProperty(default=False)
 
-	def serialize(self, include=None, exclude=None):
-		serialized = {
-			'id': self.key.id(),
+	def serialize(self):
+		return {
 			'message_id': self.message_id,
 			'datetime_updated': self.date_updated,
 			'to_recipient': self.to_recipient,
@@ -110,36 +90,18 @@ class MessageReceipt(ndb.Model):
 			'seen_status': self.seen_status
 		}
 
-		if include != None and exclude != None:
-			raise KeyError("Cannot use both 'include' and 'exclude' parameters.")
-
-		return {k: v for k, v in serialized.iteritems()
-				if (include == None and exclude == None)
-				or (include == None and not k in exclude)
-				or (exclude == None and k in include)}
-
 
 class Session(ndb.Model):
 
 	access_token = ndb.ComputedProperty(lambda self: str(uuid4()))
 	user = ndb.KeyProperty(kind='User')
-	mac_address = ndb.IntegerProperty()
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
 
 	def serialize(self):
-		serialized = {
-			'id': self.key.id(),
+		return {
 			'access_token': self.access_token,
 			'user': self.user,
 			'datetime_created': self.date_created,
 			'datetime_updated': self.date_updated
 		}
-		
-		if include != None and exclude != None:
-			raise KeyError("Cannot use both 'include' and 'exclude' parameters.")
-
-		return {k: v for k, v in serialized.iteritems()
-				if (include == None and exclude == None)
-				or (include == None and not k in exclude)
-				or (exclude == None and k in include)}
