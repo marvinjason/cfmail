@@ -42,12 +42,11 @@ class MessageReceipt(ndb.Model):
 
 	CATEGORIES = ('drafts', 'inbox', 'trash')
 	
-	message_id = ndb.KeyProperty(kind='Message')
+	message = ndb.KeyProperty(kind='Message')
 	datetime_updated = ndb.DateTimeProperty(auto_now_add=True)
 	to_recipient = ndb.KeyProperty(kind='User')
 	category = ndb.StringProperty(default=CATEGORIES[0], choices=CATEGORIES)
 	seen_status = ndb.BooleanProperty(default=False)
-
 
 class Session(ndb.Model):
 

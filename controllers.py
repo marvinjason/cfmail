@@ -30,8 +30,7 @@ def create():
         'id': user.key.id(),
         'last_name': user.last_name,
         'first_name': user.first_name,
-        'email': user.email,
-
+        'email': user.email
     })
 
 @users.route('/users/<id>', methods=['GET'])
@@ -122,3 +121,42 @@ def destroy():
         return jsonify(response)
 
     return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+
+messages = Blueprint('messages',__name__)
+
+@messages.route('/users/<id>/messages', methods=['GET'])
+def index(id):
+    session = is_authenticated()
+    if session:
+        filter = request.args.get('filter', 'inbox')
+        page = request.args.get('page')
+        received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch()
+        # if received:
+        #     messages = Message.query(received.message_id).fetch(20,(page - 1)*20)
+        #     return jsonify([k.to_dict() for k in messages])
+
+
+        return jsonify({'error': {'status': 404, 'message': 'messages not found'}}), 404
+
+@messages.route('/users/<id>/messages', methods=['POST'])
+def create(id):
+    # JSON:
+    #     {
+    #         "subject": "My Subject",
+    #         "body": "My Body",
+    #         "recipients": [
+    #             'email1@cfmail.com',
+    #             'email2@cfmail.com',
+    #             'email3@cfmail.com'
+    #         ]
+    #     }
+    session = is_authenticated()
+    if session and session.user.id() == id:
+        data = request.get_json()
+        message = Message(
+            subject=data['subject'],
+            body=data['body'],
+            user=session.user
+        ).put()
+        for i in data['recipients']:
+            pass
