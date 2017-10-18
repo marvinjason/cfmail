@@ -71,7 +71,7 @@ def update(id):
                 updates.append(k)
 
             user.put()
-            return jsonify([k: v for k, v in user.serialize().iteritems() if k in updates])
+            return jsonify(user.serialize(include=updates))
 
     return get_status_code(401)
 
