@@ -57,63 +57,58 @@ def update(id):
 
     if session:
         if session.user.id() == int(id):
+            data = request.get_json()
             user = session.user.get()
+            updates = ['username', 'email']
             
-            if request.form['last_name']:
-                user.last_name = request.form['last_name']
-            if request.form['first_name']:
-                user.first_name = request.form['first_name']
-            if request.form['password']:
-                user.password = bcrypt.hashpw(request.form['password'], bcrypt.gensalt())
-            user.put()
-            response = {
-                'id': user.key.id(),
-                'last_name': user.last_name,
-                'first_name': user.first_name,
-                'email': user.email
-            }
-            return jsonify(response)
+            for k, v in data.iteritems():
+                if k in ['username', 'email', 'birthdate' 'age',
+                         'datetime_created', 'datetime_udpated']:
+                    continue
 
-    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+                v = (bcrypt.hashpw(v, bcrypt.gensalt()) if k == 'password' else v)
+                exec("user.{0} = v".format(k))
+                updates.append(k)
+
+            user.put()
+            return jsonify([k: v for k, v in user.serialize().iteritems() if k in updates])
+
+    return get_status_code(401)
+
 
 @users.route('/users/<id>', methods=['DELETE'])
 def destroy(id):
     session = is_authenticated()
+
     if session:
         if session.user.id() == int(id):
             user = session.user.get()
-            response = {
-                'id': user.key.id(),
-                'last_name': user.last_name,
-                'first_name': user.first_name,
-                'email': user.email
-            }
+            response = user.serialize()
             user.key.delete()
+            
             return jsonify(response)
 
-    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+    return get_status_code(401)
+
 
 sessions = Blueprint('sessions', __name__)
 
+
 @sessions.route('/sessions', methods=['POST'])
 def create():
-    email = request.form['email']
-    password = request.form['password']
+    data = request.get_json()
+    email = data['email']
+    password = data['password']
     user = User.query(User.email == email).get()
 
     if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(access_token=str(uuid4()), user=user.key)
         session.put()
-        response = {
-            'id': user.key.id(),
-            'last_name': user.last_name,
-            'first_name': user.first_name,
-            'email': user.email,
-            'access_token': session.access_token
-        }
-        return jsonify(response)
 
-    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+        return jsonify(response.serialize())
+
+    return get_status_code(401)
+
 
 @sessions.route('/sessions', methods=['DELETE'])
 def destroy():
@@ -121,19 +116,16 @@ def destroy():
 
     if session:
         user = session.user.get()
-        response = {
-            'id': user.key.id(),
-            'last_name': user.last_name,
-            'first_name': user.first_name,
-            'email': user.email,
-            'access_token': session.access_token
-        }
+        response = session.serialize()
         session.key.delete()
+
         return jsonify(response)
 
-    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+    return get_status_code(401)
+
 
 messages = Blueprint('messages',__name__)
+
 
 @messages.route('/users/<id>/messages', methods=['GET'])
 def index(id):
