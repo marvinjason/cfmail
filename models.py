@@ -37,6 +37,7 @@ class User(ndb.Model):
 
 	def serialize(self):
 		return {
+			'id': self.key.id(),
 			'username': self.username,
 			'email': self.email,
 			'password': self.password,
@@ -64,6 +65,7 @@ class Message(ndb.Model):
 
 	def serialize(self):
 		return {
+			'id': self.key.id(),
 			'datetime_created': self.date_created,
 			'from_recipient': self.from_recipient,
 			'subject': self.subject,
@@ -83,6 +85,7 @@ class MessageReceipt(ndb.Model):
 
 	def serialize(self):
 		return {
+			'id': self.key.id(),
 			'message_id': self.message_id,
 			'datetime_updated': self.date_updated,
 			'to_recipient': self.to_recipient,
@@ -100,6 +103,7 @@ class Session(ndb.Model):
 
 	def serialize(self):
 		return {
+			'id': self.key.id(),
 			'access_token': self.access_token,
 			'user': self.user,
 			'datetime_created': self.date_created,
