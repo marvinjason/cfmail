@@ -101,11 +101,12 @@ def create():
     email = data['email']
     password = data['password']
     user = User.query(User.email == email).get()
-
+    
     if user and bcrypt.hashpw(password, user.password) == user.password:
-        session = Session(access_token=str(uuid4()), user=user.key)
+        session = Session(user=user.key)
         session.put()
-
+        
+        return jsonify(session.serialize())
         return jsonify(response.serialize())
 
     return get_status_code(401)
