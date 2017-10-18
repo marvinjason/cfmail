@@ -47,7 +47,7 @@ def create():
     except:
         return get_status_code(400)
 
-    return jsonify(user.serialize())
+    return jsonify(user.serialize(exclude=['password']))
 
 
 @users.route('/users/<id>', methods=['GET'])
