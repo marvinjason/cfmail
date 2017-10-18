@@ -1,20 +1,21 @@
 from constants import get_status_code
 from datetime import datetime
 from flask import Blueprint, jsonify, request
+from google.appengine.ext import ndb
 from models import Message, MessageReceipt, Session, User
 from pybcrypt import bcrypt
+from uuid import getnode as get_mac
 
 
 def is_authenticated():
     access_token = request.args.get('access_token')
+    token_count = 0
     
     if access_token:
-        session = Session.query(Session.access_token == access_token ).get()
-
-        if session:
-            return session
-
-    return False
+        token_count = (Session.query(ndb.AND(Session.access_token == access_token,
+                                             Session.mac_address == get_mac())).count())
+        
+    return token_count > 0
 
 
 users = Blueprint('users', __name__)

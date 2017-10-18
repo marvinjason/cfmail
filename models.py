@@ -3,6 +3,7 @@ from google.appengine.ext import ndb
 from pybcrypt import bcrypt
 from pycountry import countries
 from uuid import uuid4
+from uuid import getnode as get_mac
 
 
 
@@ -122,6 +123,7 @@ class Session(ndb.Model):
 
 	access_token = ndb.ComputedProperty(lambda self: str(uuid4()))
 	user = ndb.KeyProperty(kind='User')
+	mac_address = ndb.IntegerProperty()
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
 
