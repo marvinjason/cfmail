@@ -98,7 +98,7 @@ class MessageReceipt(ndb.Model):
 	datetime_updated = ndb.DateTimeProperty(auto_now_add=True)
 	to_recipient = ndb.KeyProperty(kind='User')
 	category = ndb.StringProperty(default=CATEGORIES[0], choices=CATEGORIES)
-	read = ndb.BooleanProperty(default=False)
+	is_read = ndb.BooleanProperty(default=False)
 
 	def serialize(self, include=None, exclude=None):
 		serialized = {
@@ -107,7 +107,7 @@ class MessageReceipt(ndb.Model):
 			'datetime_updated': self.date_updated,
 			'to_recipient': self.to_recipient,
 			'category': self.category,
-			'seen_status': self.seen_status
+			'is_read': self.is_read
 		}
 
 		if include != None and exclude != None:
