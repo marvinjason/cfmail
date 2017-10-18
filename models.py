@@ -3,6 +3,7 @@ from google.appengine.ext import ndb
 from pybcrypt import bcrypt
 from pycountry import countries
 from uuid import uuid4
+from uuid import getnode
 
 
 
@@ -95,13 +96,16 @@ class Session(ndb.Model):
 
 	access_token = ndb.ComputedProperty(lambda self: str(uuid4()))
 	user = ndb.KeyProperty(kind='User')
+	mac_address = ndb.ComputedProperty(lambda self: getnode())
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
 
-	def serialize(self):
-		return {
+	def serialize(self, include=None, exclude=None):
+		serialized = {
+			'id': self.key.id(),
 			'access_token': self.access_token,
-			'user': self.user,
+			'user': self.user.id(),
+			'mac_address': self.mac_address,
 			'datetime_created': self.date_created,
 			'datetime_updated': self.date_updated
 		}
