@@ -98,7 +98,7 @@ class MessageReceipt(ndb.Model):
 	datetime_updated = ndb.DateTimeProperty(auto_now_add=True)
 	to_recipient = ndb.KeyProperty(kind='User')
 	category = ndb.StringProperty(default=CATEGORIES[0], choices=CATEGORIES)
-	seen_status = ndb.BooleanProperty(default=False)
+	read = ndb.BooleanProperty(default=False)
 
 	def serialize(self, include=None, exclude=None):
 		serialized = {
