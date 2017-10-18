@@ -1,7 +1,9 @@
 from datetime import datetime
 from google.appengine.ext import ndb
+from pybcrypt import bcrypt
 from pycountry import countries
 from uuid import uuid4
+
 
 
 class User(ndb.Model):
@@ -18,7 +20,7 @@ class User(ndb.Model):
 	middle_name = ndb.StringProperty(required=True)
 	last_name = ndb.StringProperty(required=True)
 	sex = ndb.StringProperty(required=True, choices=SEXES)
-	birthdate = ndb.DateTimeProperty(required=True)
+	birthdate = ndb.DateProperty()
 	age = ndb.ComputedProperty(lambda self: datetime.now().year - self.birthdate.year - ((datetime.now().month, datetime.now().day) < (self.birthdate.month, self.birthdate.day)))
 	contact_number = ndb.StringProperty()
 	address = ndb.StringProperty(required=True)
@@ -73,7 +75,7 @@ class MessageReceipt(ndb.Model):
 
 	CATEGORIES = ('drafts', 'inbox', 'trash')
 	
-	message_id = ndb.KeyProperty(kind='Message')
+	message = ndb.KeyProperty(kind='Message')
 	datetime_updated = ndb.DateTimeProperty(auto_now_add=True)
 	to_recipient = ndb.KeyProperty(kind='User')
 	category = ndb.StringProperty(default=CATEGORIES[0], choices=CATEGORIES)
