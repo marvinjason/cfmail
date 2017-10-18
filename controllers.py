@@ -9,13 +9,12 @@ from uuid import getnode as get_mac
 
 def is_authenticated():
     access_token = request.args.get('access_token')
-    token_count = 0
+    session = None
     
     if access_token:
-        token_count = (Session.query(ndb.AND(Session.access_token == access_token,
-                                             Session.mac_address == get_mac())).count())
+        session = Session.query(Session.access_token == access_token).get()
         
-    return token_count > 0
+    return session if session else False
 
 
 users = Blueprint('users', __name__)
@@ -105,12 +104,11 @@ def create():
     email = data['email']
     password = data['password']
     user = User.query(User.email == email).get()
-    #return jsonify(user.serialize())
+
     if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(user=user.key)
         session.put()
-        
-        return jsonify(session.serialize())
+        return jsonify(session.serialize(exclude=['datetime_updated', 'mac_address', 'id']))
 
     return get_status_code(401)
 
@@ -158,9 +156,9 @@ def create(id):
     #         "subject": "My Subject",
     #         "body": "My Body",
     #         "recipients": [
-    #             'email1@cfmail.com',
-    #             'email2@cfmail.com',
-    #             'email3@cfmail.com'
+    #             "email1@cfmail.com",
+    #             "email2@cfmail.com",
+    #             "email3@cfmail.com"
     #         ]
     #     }
     session = is_authenticated()
@@ -191,7 +189,12 @@ def create(id):
             'id': message.key.id(),
             'subject': message.subject,
             'body': message.body,
-            'recipients': [{'id': i.id(), 'email': i.get().email} for i in message_recipients],
+            'recipients': [
+                    {
+                        'id': i.get().to_recipient.id(),
+                        'email': i.get().to_recipient.get().email
+                    } for i in message_recipients
+                ],
             'timestamp': message.datetime_created
         }
 
