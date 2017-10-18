@@ -138,7 +138,7 @@ messages = Blueprint('messages',__name__)
 @messages.route('/users/<id>/messages', methods=['GET'])
 def index(id):
     session = is_authenticated()
-    if session:
+    if session and session.user.id() == id:
         filter = request.args.get('filter', 'inbox')
         page = request.args.get('page')
         received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch()
@@ -169,5 +169,8 @@ def create(id):
             body=data['body'],
             user=session.user
         ).put()
-        for i in data['recipients']:
-            pass
+        for recipient in data['recipients']:
+            MessageReceipt(
+                message=message,
+                to_recipient=recipient
+            ).put()
