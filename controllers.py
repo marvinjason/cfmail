@@ -141,11 +141,16 @@ def index(id):
     if session and session.user.id() == id:
         filter = request.args.get('filter', 'inbox')
         page = request.args.get('page')
-        received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch()
-        # if received:
-        #     messages = Message.query(received.message_id).fetch(20,(page - 1)*20)
-        #     return jsonify([k.to_dict() for k in messages])
+        received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch(20,(page-1)*20)
+        if received:
+            messages = Message.query(received.message_id).fetch(20,(page - 1)*20)
+            return jsonify([k.to_dict() for k in messages])
+    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
 
+@messages.route('/users/<id>/messages/<id>', methods=['GET'])
+def index(id):
+    session = is_authenticated()
+    if session and session.user.id() == id:
 
         return jsonify({'error': {'status': 404, 'message': 'messages not found'}}), 404
 
@@ -169,6 +174,7 @@ def create(id):
             body=data['body'],
             user=session.user
         ).put()
+
         for recipient in data['recipients']:
             MessageReceipt(
                 message=message,
