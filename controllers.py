@@ -162,15 +162,37 @@ def create(id):
     #         ]
     #     }
     session = is_authenticated()
-    if session and session.user.id() == id:
+
+    if session and session.user.id() == long(id):
         data = request.get_json()
+
         message = Message(
             subject=data['subject'],
             body=data['body'],
-            user=session.user
-        ).put()
+            from_recipient=session.user
+        )
+        message.put()
+
+        message_recipients = []
+
         for recipient in data['recipients']:
-            MessageReceipt(
-                message=message,
-                to_recipient=recipient
-            ).put()
+            user = User.query(User.email == recipient).get()
+            if user:
+                message_recipients.append(
+                    MessageReceipt(
+                        message=message.key,
+                        to_recipient=user.key
+                    ).put()
+                )
+
+        response = {
+            'id': message.key.id(),
+            'subject': message.subject,
+            'body': message.body,
+            'recipients': [{'id': i.id(), 'email': i.get().email} for i in message_recipients],
+            'timestamp': message.datetime_created
+        }
+
+        return jsonify(response)
+
+    return get_status_code(400)
