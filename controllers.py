@@ -105,7 +105,7 @@ def create():
     email = data['email']
     password = data['password']
     user = User.query(User.email == email).get()
-    #return jsonify(user.serialize())
+    
     if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(user=user.key)
         session.put()
@@ -129,7 +129,7 @@ def destroy():
     return get_status_code(401)
 
 
-messages = Blueprint('messages',__name__)
+messages = Blueprint('messages', __name__)
 
 
 @messages.route('/users/<id>/messages', methods=['GET'])
