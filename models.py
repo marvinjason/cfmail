@@ -121,9 +121,9 @@ class MessageReceipt(ndb.Model):
 
 class Session(ndb.Model):
 
-	access_token = ndb.ComputedProperty(lambda self: str(uuid4()))
+	access_token = ndb.StringProperty(default=str(uuid4()))
 	user = ndb.KeyProperty(kind='User')
-	mac_address = ndb.ComputedProperty(lambda self: getnode())
+	mac_address = ndb.IntegerProperty(default=getnode())
 	date_created = ndb.DateTimeProperty(auto_now_add=True)
 	date_updated = ndb.DateTimeProperty(auto_now_add=True)
 

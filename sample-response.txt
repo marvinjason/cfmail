@@ -1,0 +1,30 @@
+[
+    {
+        "id",
+        "subject",
+        "body",
+        "full_name",
+        "timestamp"
+        "is_read",
+        "email",
+
+    }
+]
+
+
+{
+    "message": {
+        "id"
+        "subject",
+        "body",
+        "timestamp",
+    },
+    "is_read",
+    "user": {
+        "id",
+        "last_name",
+        "middle_name",
+        "first_name",
+        "email"
+    }
+}
