@@ -38,7 +38,7 @@ def create():
         
         for k, v in data.iteritems():
             v = (bcrypt.hashpw(v, bcrypt.gensalt()) if k == 'password'
-                else datetime.strptime(v, '%M/%d/%Y').date() if k == 'birthdate'
+                else datetime.strptime(v, '%Y-%m-%d').date() if k == 'birthdate'
                 else v)
 
             exec("user.{0} = v".format(k))
@@ -105,13 +105,12 @@ def create():
     email = data['email']
     password = data['password']
     user = User.query(User.email == email).get()
-    
+    #return jsonify(user.serialize())
     if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(user=user.key)
         session.put()
         
         return jsonify(session.serialize())
-        return jsonify(response.serialize())
 
     return get_status_code(401)
 

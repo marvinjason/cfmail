@@ -36,8 +36,9 @@ class User(ndb.Model):
 	def exists(cls, username):
 		return cls.query(cls.username == username).count() > 0
 
-	def serialize(self):
-		return {
+	def serialize(self, include=None, exclude=None):
+		serialized = {
+			'id': self.key.id(),
 			'username': self.username,
 			'email': self.email,
 			'password': self.password,
@@ -54,6 +55,14 @@ class User(ndb.Model):
 			'postal_code': self.postal_code,
 			'country': self.country
 		}
+
+		if include != None and exclude != None:
+			raise KeyError("Cannot use both 'include' and 'exclude'.")
+
+		return {k: v for k, v in serialized.iteritems()
+				if (include == None and exclude == None)
+				or (exclude == None and k in include)
+				or (include == None and k not in exclude)}
 	
 	
 class Message(ndb.Model):
@@ -63,13 +72,22 @@ class Message(ndb.Model):
 	subject = ndb.StringProperty()
 	body = ndb.StringProperty()
 
-	def serialize(self):
-		return {
+	def serialize(self, include=None, exclude=None):
+		serialized = {
+			'id': self.key.id(),
 			'datetime_created': self.date_created,
 			'from_recipient': self.from_recipient,
 			'subject': self.subject,
 			'body': self.body
 		}
+
+		if include != None and exclude != None:
+			raise KeyError("Cannot use both 'include' and 'exclude'.")
+
+		return {k: v for k, v in serialized.iteritems()
+				if (include == None and exclude == None)
+				or (exclude == None and k in include)
+				or (include == None and k not in exclude)}
 	
 	
 class MessageReceipt(ndb.Model):
@@ -82,14 +100,23 @@ class MessageReceipt(ndb.Model):
 	category = ndb.StringProperty(default=CATEGORIES[0], choices=CATEGORIES)
 	seen_status = ndb.BooleanProperty(default=False)
 
-	def serialize(self):
-		return {
+	def serialize(self, include=None, exclude=None):
+		serialized = {
+			'id': self.key.id(),
 			'message_id': self.message_id,
 			'datetime_updated': self.date_updated,
 			'to_recipient': self.to_recipient,
 			'category': self.category,
 			'seen_status': self.seen_status
 		}
+
+		if include != None and exclude != None:
+			raise KeyError("Cannot use both 'include' and 'exclude'.")
+
+		return {k: v for k, v in serialized.iteritems()
+				if (include == None and exclude == None)
+				or (exclude == None and k in include)
+				or (include == None and k not in exclude)}
 
 
 class Session(ndb.Model):
@@ -109,3 +136,11 @@ class Session(ndb.Model):
 			'datetime_created': self.date_created,
 			'datetime_updated': self.date_updated
 		}
+
+		if include != None and exclude != None:
+			raise KeyError("Cannot use both 'include' and 'exclude'.")
+
+		return {k: v for k, v in serialized.iteritems()
+				if (include == None and exclude == None)
+				or (exclude == None and k in include)
+				or (include == None and k not in exclude)}
