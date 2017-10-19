@@ -193,7 +193,7 @@ def index(id):
                 "messages": messages
             }
 
-            return jsonify(response) # raises Exception?
+            return jsonify(response)
         else:
             return get_status_code(401)
         
