@@ -159,34 +159,41 @@ def index(id):
             filter = args.get('filter', 'inbox')
             page = args.get('page', '1')
             offset = (int(page) - 1) * 20
-            receipts = MessageReceipt.query(MessageReceipt.to_recipient == session.user and MessageReceipt.category == filter).fetch(20, offset=offset)
-            messages = []
+            data = []
+            
+            if filter in MessageReceipt.CATEGORIES[:2]:
+                receipts = list(MessageReceipt.query(MessageReceipt.to_recipient == session.user and MessageReceipt.category == filter).fetch())
+                
+                if receipts:
+                    for r in receipts:
+                        message = r.message.get().serialize(exclude=['id'])
+                        message.update(r.serialize())
+                        data.append(message)
 
-            if receipts:
-                for i in receipts:
-                    message = i.message.get()
-                    message_json = {
-                        "id": i.message.id(),
-                        "subject": message.subject,
-                        "body": message.body,
-                        "timestamp": message.datetime_created
-                    }
-                    user = message.from_recipient.get()
-                    user_json = {
-                        "id": user.key.id(),
-                        "email": user.email,
-                        "last_name": user.last_name,
-                        "first_name": user.first_name,
-                        "middle_name": user.middle_name
-                    }
-                    data = {
-                        "is_read": i.is_read,
-                        "message": message_json,
-                        "sender": user_json
-                    }
-                    messages.append(data)
+            elif filter in MessageReceipt.CATEGORIES[2:]:
+                messages = list(Message.query(Message.from_recipient == session.user))
 
-            return jsonify(messages) # raises Exception?
+                if messages:
+                    for m in messages:
+                        receipts = list(MessageReceipt.query(MessageReceipt.message == m.key and MessageReceipt.category == filter).fetch())
+                        message = m.serialize()
+
+                        if len(receipts) > 0:
+                            message.update({
+                                'category': filter,
+                                'to_recipient': r.serialize(include=['to_recipient'])
+                            })
+
+                        else:
+                            message.update({
+                                'category': MessageReceipt.CATEGORIES[2],
+                                'to_recipient': []
+                            })
+
+                        data.append(message)
+
+            return jsonify(data)
+            
         else:
             return get_status_code(401)
         
@@ -200,9 +207,9 @@ def show(user_id, message_id):
         session = is_authenticated()
         if session:
             user = User.query(User.id()==long(user_id)).get()
-            
             message = Message.query(Message.id() == long(message_id)).get()
-            message_receipt= MessageReceipt.query(user.key==MessageReceipt.to_recipient and message.key==MessageReceipt.message)
+            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and
+                                                   MessageReceipt.message == message.key)
 
         return jsonify(message_receipt.serialize())
 
@@ -263,3 +270,12 @@ def create(id):
         return jsonify(response)
 
     return get_status_code(400)
+
+@messages.route('/users/<id>/messages', methods=['POST'])
+def update(id):
+    session = is_authenticated()
+
+    if session and session.user.id() == long(id):
+        data = request.get_json()
+
+        

@@ -73,13 +73,21 @@ class Message(ndb.Model):
 	body = ndb.StringProperty()
 
 	def serialize(self, include=None, exclude=None):
-		receipts = MessageReceipt.query(MessageReceipt.message == self.key).fetch()
+		'''receipts = MessageReceipt.query(MessageReceipt.message == self.key).fetch()
 		
 		serialized = {
 			'id': self.key.id(),
 			'datetime_created': self.date_created,
 			'from_recipient': self.from_recipient,
 			'to_recipient': [r.to_recipient for r in receipts]
+			'subject': self.subject,
+			'body': self.body
+		}'''
+		
+		serialized = {
+			'id': self.key.id(),
+			'datetime_created': self.datetime_created,
+			'from_recipient': self.from_recipient.get().email,
 			'subject': self.subject,
 			'body': self.body
 		}
@@ -95,7 +103,7 @@ class Message(ndb.Model):
 	
 class MessageReceipt(ndb.Model):
 
-	CATEGORIES = ('drafts', 'inbox', 'trash')
+	CATEGORIES = ('inbox', 'trash', 'drafts', 'sent')
 	
 	message = ndb.KeyProperty(kind='Message')
 	datetime_updated = ndb.DateTimeProperty(auto_now_add=True)
@@ -104,7 +112,7 @@ class MessageReceipt(ndb.Model):
 	is_read = ndb.BooleanProperty(default=False)
 
 	def serialize(self, include=None, exclude=None):
-		message = Message.query(Message.id() == self.message).get()
+		'''message = self.message.get()
 
 		serialized = {
 			'id': self.key.id(),
@@ -114,7 +122,16 @@ class MessageReceipt(ndb.Model):
 			'category': self.category,
 			'is_read': self.is_read
 		}
-		serialized.update(message.serialize())
+		serialized.update(message.serialize())'''
+
+		serialized = {
+			'id': self.key.id(),
+			'message': self.message.id(),
+			'datetime_updated': self.datetime_updated,
+			'to_recipient': self.to_recipient.get().email,
+			'category': self.category,
+			'is_read': self.is_read
+		}
 
 		if include != None and exclude != None:
 			raise KeyError("Cannot use both 'include' and 'exclude'.")
