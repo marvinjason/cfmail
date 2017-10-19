@@ -198,13 +198,14 @@ def index(id):
 def show(user_id, message_id):
     try:
         session = is_authenticated()
-        if session:
-            user = User.query(User.id()==long(user_id)).get()
-            
-            message = Message.query(Message.id() == long(message_id)).get()
-            message_receipt= MessageReceipt.query(user.key==MessageReceipt.to_recipient and message.key==MessageReceipt.message)
 
-        return jsonify(message_receipt.serialize())
+        if session and session.user.id() == long(user_id):
+            user = session.user.get()
+            message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
+            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
+            return jsonify(message_receipt.serialize())
+        else:
+            return get_status_code(401)
 
     except Exception as e:
         return get_status_code(404)
