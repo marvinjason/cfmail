@@ -221,6 +221,10 @@ def destroy(user_id, message_id):
             message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
             message_receipt = MessageReceipt.query(
                 MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
+            message_receipt.fetch()
+            message_receipt.category = 'trash'
+            message_receipt.put()
+        return jsonify(message_receipt.serialize())
     except Exception as e:
         return get_status_code(404)
 
