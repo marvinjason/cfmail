@@ -1,22 +1,82 @@
 
 /users/<user-id>/messages [GET]
-[
-    {
-        "is_read": false,
-        "message": {
-            "body": "test",
+{
+    "filter": "inbox",
+    "total_count": 54,
+    "messages": [
+        {
             "id": 5132107961597952,
             "subject": "test",
+            "body": "test",
             "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+            "is_read": false,
+            "sender": {
+                "email": "syd@cfmail.com",
+                "first_name": "Marvin Jason",
+                "id": 6270652252160000,
+                "last_name": "Sy",
+                "middle_name": "Leonardo"
+            }
         },
-        "sender": {
+        {
+            "id": 5132107961597952,
+            "subject": "test",
+            "body": "test",
+            "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+            "is_read": false,
+            "sender": {
+                "email": "syd@cfmail.com",
+                "first_name": "Marvin Jason",
+                "id": 6270652252160000,
+                "last_name": "Sy",
+                "middle_name": "Leonardo"
+            }
+        },
+        {
+            "id": 5132107961597952,
+            "subject": "test",
+            "body": "test",
+            "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+            "is_read": false,
+            "sender": {
+                "email": "syd@cfmail.com",
+                "first_name": "Marvin Jason",
+                "id": 6270652252160000,
+                "last_name": "Sy",
+                "middle_name": "Leonardo"
+            }
+        }
+    ]
+}
+
+/users/<user-id>/messages/<message-id> [GET]
+{
+    "id": 5132107961597952,
+    "subject": "test",
+    "body": "test",
+    "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+    "is_read": true,
+    "sender": {
+        "email": "syd@cfmail.com",
+        "first_name": "Marvin Jason",
+        "id": 6270652252160000,
+        "last_name": "Sy",
+        "middle_name": "Leonardo"
+    },
+    "recipients": [
+        {
+            "email": "syd@cfmail.com",
+            "first_name": "Marvin Jason",
+            "id": 6270652252160000,
+            "last_name": "Sy",
+            "middle_name": "Leonardo"
+        },
+        {
             "email": "syd@cfmail.com",
             "first_name": "Marvin Jason",
             "id": 6270652252160000,
             "last_name": "Sy",
             "middle_name": "Leonardo"
         }
-    }
-]
-
-/users/<user-id>/messages/<message-id> [GET]
+    ]
+}
