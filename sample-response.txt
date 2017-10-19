@@ -1,41 +1,22 @@
 
 /users/<user-id>/messages [GET]
-
 [
     {
+        "is_read": false,
         "message": {
-            "id"
-            "subject",
-            "body",
-            "timestamp",
+            "body": "test",
+            "id": 5132107961597952,
+            "subject": "test",
+            "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
         },
-        "is_read",
-        "user": {
-            "id",
-            "last_name",
-            "middle_name",
-            "first_name",
-            "email"
+        "sender": {
+            "email": "syd@cfmail.com",
+            "first_name": "Marvin Jason",
+            "id": 6270652252160000,
+            "last_name": "Sy",
+            "middle_name": "Leonardo"
         }
-    },
-    {
-        "message": {
-            "id"
-            "subject",
-            "body",
-            "timestamp",
-        },
-        "is_read",
-        "user": {
-            "id",
-            "last_name",
-            "middle_name",
-            "first_name",
-            "email"
-        }
-    },
-    ...
+    }
 ]
 
 /users/<user-id>/messages/<message-id> [GET]
-

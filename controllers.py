@@ -154,17 +154,44 @@ def index(id):
     try:
         session = is_authenticated()
 
-        if session and session.user.id() == id:
+        if session and session.user.id() == long(id):
             args = request.args
             filter = args.get('filter', 'inbox')
-            page = args.get('page')
-            received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch(20,(page-1)*20)
-            messages = Message.query(received.message_id).fetch(20,(page - 1)*20) if received else None
+            page = args.get('page', '1')
+            offset = (int(page) - 1) * 20
+            receipts = MessageReceipt.query(MessageReceipt.to_recipient == session.user and MessageReceipt.category == filter).fetch(20, offset=offset)
+            messages = []
 
-        return jsonify([k.to_dict() for k in messages])
+            if receipts:
+                for i in receipts:
+                    message = i.message.get()
+                    message_json = {
+                        "id": i.message.id(),
+                        "subject": message.subject,
+                        "body": message.body,
+                        "timestamp": message.datetime_created
+                    }
+                    user = message.from_recipient.get()
+                    user_json = {
+                        "id": user.key.id(),
+                        "email": user.email,
+                        "last_name": user.last_name,
+                        "first_name": user.first_name,
+                        "middle_name": user.middle_name
+                    }
+                    data = {
+                        "is_read": i.is_read,
+                        "message": message_json,
+                        "sender": user_json
+                    }
+                    messages.append(data)
+
+            return jsonify(messages) # raises Exception?
+        else:
+            return get_status_code(401)
         
-    except Exception as e:
-        return get_status_code(401)
+    except:
+        return get_status_code(400)
 
 
 @messages.route('/users/<user_id>/messages/<message_id>', methods=['GET'])
@@ -209,6 +236,7 @@ def create(id):
                 message_recipients.append(
                     MessageReceipt(
                         message=message.key,
+                        category='inbox',
                         to_recipient=user.key
                     ).put()
                 )
