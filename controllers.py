@@ -169,12 +169,18 @@ def index(id):
 
 @messages.route('/users/<user_id>/messages/<message_id>', methods=['GET'])
 def show(user_id, message_id):
-    session = is_authenticated()
-    if session and session.user.id() == id:
-        message = Message.query(long(id) == Message.id())
-        mes_receipt = MessageReceipt.query(message.key == MessageReceipt.message)
+    try:
+        session = is_authenticated()
+        if session:
+            user = User.query(User.id()==long(user_id)).get()
+            
+            message = Message.query(Message.id() == long(message_id)).get()
+            message_receipt= MessageReceipt.query(user.key==MessageReceipt.to_recipient and message.key==MessageReceipt.message)
 
-    return jsonify({'error': {'status': 404, 'message': 'messages not found'}}), 404
+        return jsonify(message_receipt.serialize())
+
+    except Exception as e:
+        return get_status_code(404)
 
 
 @messages.route('/users/<id>/messages', methods=['POST'])
