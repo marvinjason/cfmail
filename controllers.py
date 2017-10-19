@@ -104,11 +104,8 @@ def create():
     email = data['email']
     password = data['password']
     user = User.query(User.email == email).get()
-<<<<<<< HEAD
     
-=======
 
->>>>>>> 5eebd50a8acc6f65cf843ad1988662561129d615
     if user and bcrypt.hashpw(password, user.password) == user.password:
         session = Session(user=user.key)
         session.put()
