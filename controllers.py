@@ -211,6 +211,20 @@ def show(user_id, message_id):
         return get_status_code(404)
 
 
+@messages.route('/users/<user_id>/messages/<message_id>', methods=['DELETE'])
+def destroy(user_id, message_id):
+    try:
+        session = is_authenticated()
+
+        if session and session.user.id() == long(user_id):
+            user = session.user.get()
+            message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
+            message_receipt = MessageReceipt.query(
+                MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
+    except Exception as e:
+        return get_status_code(404)
+
+
 @messages.route('/users/<id>/messages', methods=['POST'])
 def create(id):
     # JSON:
