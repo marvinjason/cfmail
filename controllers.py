@@ -209,7 +209,10 @@ def show(user_id, message_id):
         if session and session.user.id() == long(user_id):
             user = session.user.get()
             message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
-            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get().serialize()
+            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
+            message_receipt.is_read = True
+            message_receipt.put()
+            message_receipt = message_receipt.serialize()
             sender = message.from_recipient.get()
 
             sender_dict = {
@@ -246,9 +249,7 @@ def destroy(user_id, message_id):
         if session and session.user.id() == long(user_id):
             user = session.user.get()
             message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
-            message_receipt = MessageReceipt.query(
-                MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
-            message_receipt.fetch()
+            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
             message_receipt.category = 'trash'
             message_receipt.put()
         return jsonify(message_receipt.serialize())
