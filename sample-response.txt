@@ -1,30 +1,41 @@
+
+/users/<user-id>/messages [GET]
+
 [
     {
-        "id",
-        "subject",
-        "body",
-        "full_name",
-        "timestamp"
+        "message": {
+            "id"
+            "subject",
+            "body",
+            "timestamp",
+        },
         "is_read",
-        "email",
-
-    }
+        "user": {
+            "id",
+            "last_name",
+            "middle_name",
+            "first_name",
+            "email"
+        }
+    },
+    {
+        "message": {
+            "id"
+            "subject",
+            "body",
+            "timestamp",
+        },
+        "is_read",
+        "user": {
+            "id",
+            "last_name",
+            "middle_name",
+            "first_name",
+            "email"
+        }
+    },
+    ...
 ]
 
+/users/<user-id>/messages/<message-id> [GET]
 
-{
-    "message": {
-        "id"
-        "subject",
-        "body",
-        "timestamp",
-    },
-    "is_read",
-    "user": {
-        "id",
-        "last_name",
-        "middle_name",
-        "first_name",
-        "email"
-    }
-}
