@@ -22,7 +22,11 @@ users = Blueprint('users', __name__)
 
 @users.route('/users')
 def index():
-	return 'user'
+    try:
+	    return 'user'
+
+    except Exception as e:
+        return get_status_code(401)
     
 
 @users.route('/users', methods=['POST'])
@@ -43,23 +47,26 @@ def create():
             exec("user.{0} = v".format(k))
 
         user.put()
-    except:
-        return get_status_code(400)
+        return jsonify(user.serialize(exclude=['password']))
 
-    return jsonify(user.serialize(exclude=['password']))
+    except Exception as e:
+        return get_status_code(400)
 
 
 @users.route('/users/<id>', methods=['GET'])
 def show(id):
-    user = User.get_by_id(int(id))
-    return jsonify(user.serialize())
+    try:
+        user = User.get_by_id(int(id))
+        return jsonify(user.serialize())
 
+    except Exception as e:
+        return get_status_code(401)
 
 @users.route('/users/<id>', methods=['PUT'])
 def update(id):
-    session = is_authenticated()
+    try:
+        session = is_authenticated()
 
-    if session:
         if session.user.id() == int(id):
             data = request.get_json()
             user = session.user.get()
@@ -67,32 +74,34 @@ def update(id):
             
             for k, v in data.iteritems():
                 if k in ['username', 'email', 'birthdate' 'age',
-                         'datetime_created', 'datetime_udpated']:
+                        'datetime_created', 'datetime_udpated']:
                     continue
 
                 v = (bcrypt.hashpw(v, bcrypt.gensalt()) if k == 'password' else v)
                 exec("user.{0} = v".format(k))
                 updates.append(k)
 
-            user.put()
-            return jsonify(user.serialize(include=updates))
+        user.put()
+        return jsonify(user.serialize(include=updates))
 
-    return get_status_code(401)
+    except Exception as e:
+        return get_status_code(401)
 
 
 @users.route('/users/<id>', methods=['DELETE'])
 def destroy(id):
     session = is_authenticated()
 
-    if session:
+    try:
         if session.user.id() == int(id):
             user = session.user.get()
             response = user.serialize()
             user.key.delete()
             
-            return jsonify(response)
+        return jsonify(response)
 
-    return get_status_code(401)
+    except Exception as e:
+        return get_status_code(401)
 
 
 sessions = Blueprint('sessions', __name__)
@@ -100,32 +109,41 @@ sessions = Blueprint('sessions', __name__)
 
 @sessions.route('/sessions', methods=['POST'])
 def create():
-    data = request.get_json()
-    email = data['email']
-    password = data['password']
-    user = User.query(User.email == email).get()
-    
-
-    if user and bcrypt.hashpw(password, user.password) == user.password:
-        session = Session(user=user.key)
-        session.put()
+    try:
+        data = request.get_json()
+        email = (data['email'] if data['email']
+                 else data['username'] if data['username']
+                 else None)
+        password = data['password']
+        user = User.query(ndb.OR(User.email == email, User.username == email)).get()
+        session = (Session(user=user.key)
+                   if user and bcrypt.hashpw(password, user.password) == user.password
+                   else None)
+        
+        if user and bcrypt.hashpw(password, user.password) == user.password:
+            session = Session(user=user.key)
+            session.put()
+            
         return jsonify(session.serialize(exclude=['datetime_updated', 'mac_address', 'id']))
 
-    return get_status_code(401)
+    except Exception as e:
+        return get_status_code(401)
 
 
 @sessions.route('/sessions', methods=['DELETE'])
 def destroy():
-    session = is_authenticated()
+    try:
+        session = is_authenticated()
 
-    if session:
-        user = session.user.get()
-        response = session.serialize()
-        session.key.delete()
+        if session:
+            user = session.user.get()
+            response = session.serialize()
+            session.key.delete()
 
         return jsonify(response)
 
-    return get_status_code(401)
+    except Exception as e:
+        return get_status_code(401)
 
 
 messages = Blueprint('messages', __name__)
@@ -133,15 +151,21 @@ messages = Blueprint('messages', __name__)
 
 @messages.route('/users/<id>/messages', methods=['GET'])
 def index(id):
-    session = is_authenticated()
-    if session and session.user.id() == id:
-        filter = request.args.get('filter', 'inbox')
-        page = request.args.get('page')
-        received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch(20,(page-1)*20)
-        if received:
-            messages = Message.query(received.message_id).fetch(20,(page - 1)*20)
-            return jsonify([k.to_dict() for k in messages])
-    return jsonify({'error': {'status': 401, 'message': 'unauthorized'}}), 401
+    try:
+        session = is_authenticated()
+
+        if session and session.user.id() == id:
+            args = request.args
+            filter = args.get('filter', 'inbox')
+            page = args.get('page')
+            received = MessageReceipt.query(session.user == MessageReceipt.to_recipient and filter == MessageReceipt.category).fetch(20,(page-1)*20)
+            messages = Message.query(received.message_id).fetch(20,(page - 1)*20) if received else None
+
+        return jsonify([k.to_dict() for k in messages])
+        
+    except Exception as e:
+        return get_status_code(401)
+
 
 @messages.route('/users/<user_id>/messages/<message_id>', methods=['GET'])
 def show(user_id, message_id):
@@ -151,6 +175,7 @@ def show(user_id, message_id):
         mes_receipt = MessageReceipt.query(message.key == MessageReceipt.message)
 
     return jsonify({'error': {'status': 404, 'message': 'messages not found'}}), 404
+
 
 @messages.route('/users/<id>/messages', methods=['POST'])
 def create(id):
