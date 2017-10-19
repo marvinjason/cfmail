@@ -211,8 +211,53 @@ def show(user_id, message_id):
             message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and
                                                    MessageReceipt.message == message.key)
 
-        return jsonify(message_receipt.serialize())
+        if session and session.user.id() == long(user_id):
+            user = session.user.get()
+            message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
+            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
+            message_receipt.is_read = True
+            message_receipt.put()
+            message_receipt = message_receipt.serialize()
+            sender = message.from_recipient.get()
 
+            sender_dict = {
+                "id": sender.key.id(),
+                "email": sender.email,
+                "first_name": sender.first_name,
+                "middle_name": sender.middle_name,
+                "last_name": sender.last_name
+            }
+
+            response = {
+                "id": message_receipt['id'],
+                "subject": message_receipt['subject'],
+                "body": message_receipt['body'],
+                "timestamp": message_receipt['datetime_created'],
+                "is_read": message_receipt['is_read'],
+                "sender": sender_dict,
+                "recipients": message_receipt['to_recipient']
+            }
+
+            return jsonify(response)            
+        else:
+            return get_status_code(401)
+
+    except Exception as e:
+        return get_status_code(404)
+
+
+@messages.route('/users/<user_id>/messages/<message_id>', methods=['DELETE'])
+def destroy(user_id, message_id):
+    try:
+        session = is_authenticated()
+
+        if session and session.user.id() == long(user_id):
+            user = session.user.get()
+            message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
+            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
+            message_receipt.category = 'trash'
+            message_receipt.put()
+        return jsonify(message_receipt.serialize())
     except Exception as e:
         return get_status_code(404)
 
