@@ -1,14 +1,12 @@
-
+=================================================================================
 /users/<user-id>/messages [GET]
+
 {
     "filter": "inbox",
-    "total_count": 54,
     "messages": [
         {
-            "id": 5132107961597952,
-            "subject": "test",
-            "body": "test",
-            "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+            "body": "nth Body",
+            "id": 5799236641751040,
             "is_read": false,
             "sender": {
                 "email": "syd@cfmail.com",
@@ -16,13 +14,13 @@
                 "id": 6270652252160000,
                 "last_name": "Sy",
                 "middle_name": "Leonardo"
-            }
+            },
+            "subject": "nth Subject",
+            "timestamp": "Thu, 19 Oct 2017 05:51:20 GMT"
         },
         {
-            "id": 5132107961597952,
-            "subject": "test",
-            "body": "test",
-            "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+            "body": "nth Body",
+            "id": 5799236641751040,
             "is_read": false,
             "sender": {
                 "email": "syd@cfmail.com",
@@ -30,13 +28,13 @@
                 "id": 6270652252160000,
                 "last_name": "Sy",
                 "middle_name": "Leonardo"
-            }
+            },
+            "subject": "nth Subject",
+            "timestamp": "Thu, 19 Oct 2017 05:51:20 GMT"
         },
         {
-            "id": 5132107961597952,
-            "subject": "test",
             "body": "test",
-            "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+            "id": 5132107961597952,
             "is_read": false,
             "sender": {
                 "email": "syd@cfmail.com",
@@ -44,12 +42,31 @@
                 "id": 6270652252160000,
                 "last_name": "Sy",
                 "middle_name": "Leonardo"
-            }
+            },
+            "subject": "test",
+            "timestamp": "Thu, 19 Oct 2017 03:25:59 GMT"
+        },
+        {
+            "body": "nth Body",
+            "id": 5799236641751040,
+            "is_read": false,
+            "sender": {
+                "email": "syd@cfmail.com",
+                "first_name": "Marvin Jason",
+                "id": 6270652252160000,
+                "last_name": "Sy",
+                "middle_name": "Leonardo"
+            },
+            "subject": "nth Subject",
+            "timestamp": "Thu, 19 Oct 2017 05:51:20 GMT"
         }
-    ]
+    ],
+    "total_count": 4
 }
 
+=================================================================================
 /users/<user-id>/messages/<message-id> [GET]
+
 {
     "id": 5132107961597952,
     "subject": "test",

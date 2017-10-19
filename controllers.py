@@ -160,33 +160,40 @@ def index(id):
             page = args.get('page', '1')
             offset = (int(page) - 1) * 20
             receipts = MessageReceipt.query(MessageReceipt.to_recipient == session.user and MessageReceipt.category == filter).fetch(20, offset=offset)
+            messages_count = MessageReceipt.query(MessageReceipt.to_recipient == session.user and MessageReceipt.category == filter).count()
             messages = []
 
             if receipts:
                 for i in receipts:
                     message = i.message.get()
-                    message_json = {
+                    sender = message.from_recipient.get()
+                    
+                    sender_dict = {
+                        "id": sender.key.id(),
+                        "email": sender.email,
+                        "last_name": sender.last_name,
+                        "first_name": sender.first_name,
+                        "middle_name": sender.middle_name
+                    }
+
+                    message_dict = {
                         "id": i.message.id(),
                         "subject": message.subject,
                         "body": message.body,
-                        "timestamp": message.datetime_created
-                    }
-                    user = message.from_recipient.get()
-                    user_json = {
-                        "id": user.key.id(),
-                        "email": user.email,
-                        "last_name": user.last_name,
-                        "first_name": user.first_name,
-                        "middle_name": user.middle_name
-                    }
-                    data = {
+                        "timestamp": message.datetime_created,
                         "is_read": i.is_read,
-                        "message": message_json,
-                        "sender": user_json
+                        "sender": sender_dict
                     }
-                    messages.append(data)
 
-            return jsonify(messages) # raises Exception?
+                    messages.append(message_dict)
+
+            response = {
+                "filter": filter,
+                "total_count": messages_count,
+                "messages": messages
+            }
+
+            return jsonify(response) # raises Exception?
         else:
             return get_status_code(401)
         
@@ -202,8 +209,28 @@ def show(user_id, message_id):
         if session and session.user.id() == long(user_id):
             user = session.user.get()
             message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
-            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
-            return jsonify(message_receipt.serialize())
+            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get().serialize()
+            sender = message.from_recipient.get()
+
+            sender_dict = {
+                "id": sender.key.id(),
+                "email": sender.email,
+                "first_name": sender.first_name,
+                "middle_name": sender.middle_name,
+                "last_name": sender.last_name
+            }
+
+            response = {
+                "id": message_receipt['id'],
+                "subject": message_receipt['subject'],
+                "body": message_receipt['body'],
+                "timestamp": message_receipt['datetime_created'],
+                "is_read": message_receipt['is_read'],
+                "sender": sender_dict,
+                "recipients": message_receipt['to_recipient']
+            }
+
+            return jsonify(response)            
         else:
             return get_status_code(401)
 

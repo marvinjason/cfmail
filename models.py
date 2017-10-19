@@ -79,7 +79,15 @@ class Message(ndb.Model):
 			'id': self.key.id(),
 			'datetime_created': self.datetime_created,
 			'from_recipient': self.from_recipient.get().email,
-			'to_recipient': [r.to_recipient.get().email for r in receipts],
+			'to_recipient': [
+				{
+					"id": r.to_recipient.id(),
+					"email": r.to_recipient.get().email,
+					"first_name": r.to_recipient.get().first_name,
+					"middle_name": r.to_recipient.get().middle_name,
+					"last_name": r.to_recipient.get().last_name
+				} for r in receipts
+			],
 			'subject': self.subject,
 			'body': self.body
 		}
