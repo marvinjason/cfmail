@@ -2,3 +2,5 @@
 *.pyc
 /lib/*
 !/lib/pybcrypt/
+/ubuntu/
+/windows/
