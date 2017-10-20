@@ -1,6 +1,6 @@
-.idea/
+**/.idea/
 *.pyc
-lib/*
-!lib/pybcrypt/
-ubuntu/
-windows/
+**/lib/*
+!**/lib/pybcrypt/
+**/ubuntu/
+**/windows/
