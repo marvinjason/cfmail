@@ -168,71 +168,68 @@ def index(id):
         user = session.user.get()
         args = request.args
         filter = args.get('filter', CATEGORIES[0])
-        total_count = 0
         page = args.get('page', '1')
         count = int(args.get('count', 20))
         offset = (int(page) - 1) * count
         data = []
+        total_count = 0
 
         if filter in CATEGORIES[:2]:
-            data = [p.serialize()
-                    for p in list(MessagePointer.query(MessagePointer.to_recipient == session.user
-                    and MessagePointer.category == filter).fetch(count, offset=offset))]
+            data = MessagePointer.query(MessagePointer.to_recipient == session.user).fetch(count, offset=offset)
             total_count = MessagePointer.query(MessagePointer.to_recipient == session.user).count()
 
         elif filter in CATEGORIES[2:]:
-            messages = list(Message.query(Message.from_recipient == session.user).fetch(count, offset=offset))
-
+            messages = Message.query(Message.from_recipient == session.user).fetch(count, offset=offset)
+            
             for m in messages:
-                data.append(MessagePointer.query(MessagePointer.message == m.key and MessagePointer.category == filter).get().serialize())
-
-            messages = list(Message.query(Message.from_recipient == session.user).fetch())
-
-            for m in messages:
-                total_count += MessagePointer.query(MessagePointer.message == m.key and MessagePointer.category == filter).count()
+                data.append(MessagePointer.query(MessagePointer.from_recipient == session.user).get())
+                total_count += MessagePointer.query(MessagePointer.from_recipient == session.user).count()
 
         response = {
             'filter': filter,
             'total_count': total_count,
-            'messages': [m.serialize() for m in data]
+            'messages': [m.serialize(include=['id', 'body', 'is_read', 'sender', 'subject', 'timestamp']) for m in data]
         }
         
         return jsonify(response)
 
     except Exception as e:
-        return get_status_code(401)
+        return str(e)#get_status_code(401)
 # End of def index
 
-@messages.route('/users/<user_id>/messages/<message_id>', methods=['GET'])
-def show(user_id, message_id):
+@messages.route('/users/<user_id>/messages/<pointer_id>', methods=['GET'])
+def show(user_id, pointer_id):
+
     try:
         session = authenticate()
 
         if session.user.id() != long(user_id):
             raise KeyError()
 
-        pointer = MessagePointer.query(MessagePointer.message == Message.get_by_id(long(message_id)).key).get()
+        pointer = MessagePointer.get_by_id(long(pointer_id))
         pointer.is_read = True
         pointer.put()
 
-        return jsonify(pointer.serialize())
+        return jsonify(pointer.serialize(exclude=['datetime_created', 'datetime_updated', 'from_recipient', 'category', 'message', 'to_recipient']))
 
     except Exception as e:
         return get_status_code(404)
 # End of def show
 
-@messages.route('/users/<user_id>/messages/<message_id>', methods=['DELETE'])
-def destroy(user_id, message_id):
+@messages.route('/users/<user_id>/messages/<pointer_id>', methods=['DELETE'])
+def destroy(user_id, pointer_id):
     try:
-        session = is_authenticated()
+        session = authenticate()
 
         if session and session.user.id() == long(user_id):
-            user = session.user.get()
-            message = Message.query(Message.key == ndb.Key('Message', long(message_id))).get()
-            message_receipt = MessageReceipt.query(MessageReceipt.to_recipient == user.key and MessageReceipt.message == message.key).get()
-            message_receipt.category = 'trash'
-            message_receipt.put()
-        return jsonify(message_receipt.serialize())
+            pointer = MessagePointer.get_by_id(long(pointer_id))
+            if not pointer:
+                return get_status_code(400)
+
+            pointer.key.delete()
+            return jsonify(pointer.serialize(exclude=['datetime_created', 'datetime_updated', 'from_recipient', 'message', 'to_recipient']))
+        else:
+            return get_status_code(401)
     except Exception as e:
         return get_status_code(404)
 
@@ -249,46 +246,48 @@ def create(id):
     #             "email3@cfmail.com"
     #         ]
     #     }
-    session = authenticate()
+    try:
+        session = authenticate()
+        
+        if session and session.user.id() == long(id):
+            data = request.get_json()
+            
+            message = Message(
+                subject=data['subject'],
+                body=data['body'],
+                from_recipient=session.user
+            )
+            message.put()
 
-    if session and session.user.id() == long(id):
-        data = request.get_json()
+            message_recipients = []
 
-        message = Message(
-            subject=data['subject'],
-            body=data['body'],
-            from_recipient=session.user
-        )
-        message.put()
+            for recipient in data['recipients']:
+                user = User.query(User.email == recipient).get()
+                if user:
+                    message_recipients.append(
+                        MessagePointer(
+                            message=message.key,
+                            category='inbox',
+                            to_recipient=user.key
+                        ).put()
+                    )
 
-        message_recipients = []
+            response = {
+                'id': message.key.id(),
+                'subject': message.subject,
+                'body': message.body,
+                'recipients': [
+                        {
+                            'id': i.get().to_recipient.id(),
+                            'email': i.get().to_recipient.get().email
+                        } for i in message_recipients
+                    ],
+                'timestamp': message.datetime_created
+            }
+            
+            return jsonify(response)
 
-        for recipient in data['recipients']:
-            user = User.query(User.email == recipient).get()
-            if user:
-                message_recipients.append(
-                    MessagePointer(
-                        message=message.key,
-                        category='inbox',
-                        to_recipient=user.key
-                    ).put()
-                )
-
-        response = {
-            'id': message.key.id(),
-            'subject': message.subject,
-            'body': message.body,
-            'recipients': [
-                    {
-                        'id': i.get().to_recipient.id(),
-                        'email': i.get().to_recipient.get().email
-                    } for i in message_recipients
-                ],
-            'timestamp': message.datetime_created
-        }
-
-        return jsonify(response)
-
-    return get_status_code(400)
+    except Exception as e:
+        return str(e) #get_status_code(400)
 
 # End of Messages Controller
