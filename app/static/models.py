@@ -73,7 +73,9 @@ class Message(ndb.Model):
 		serialized = {
 			'id': self.key.id(),
 			'datetime_created': self.datetime_created,
-			'from_recipient': self.from_recipient.get().email,
+			'from_recipient': self.from_recipient.get().serialize(include=['id', 'email',
+																		   'first_name', 'middle_name',
+																		   'last_name']),
 			'to_recipient': [p.to_recipient.get().email for p in pointers],
 			'subject': self.subject,
 			'body': self.body
@@ -101,7 +103,7 @@ class MessagePointer(ndb.Model):
 		serialized = {
 			'id': self.key.id(),
 			'message': self.message.id(),
-			'datetime_updated': self.datetime_updated,
+			'timestamp': self.datetime_updated,
 			'category': self.category,
 			'is_read': self.is_read
 		}
