@@ -3,6 +3,7 @@ from datetime import datetime
 from google.appengine.ext import ndb
 from pybcrypt import bcrypt
 from uuid import getnode, uuid4
+import time
 
 class User(ndb.Model):
 
@@ -73,10 +74,12 @@ class Message(ndb.Model):
 		serialized = {
 			'id': self.key.id(),
 			'datetime_created': self.datetime_created,
-			'from_recipient': self.from_recipient.get().serialize(include=['id', 'email',
-																		   'first_name', 'middle_name',
-																		   'last_name']),
+			'from_recipient': self.from_recipient.get().email
+			'sender': self.from_recipient.get().serialize(include=['id', 'email',
+																   'first_name', 'middle_name',
+																   'last_name']),
 			'to_recipient': [p.to_recipient.get().email for p in pointers],
+			'recipients': [p.to_recipient.get().serialize() for p in pointers]
 			'subject': self.subject,
 			'body': self.body
 		}
@@ -103,7 +106,8 @@ class MessagePointer(ndb.Model):
 		serialized = {
 			'id': self.key.id(),
 			'message': self.message.id(),
-			'timestamp': self.datetime_updated,
+			'datetime_updated': self.datetime_updated
+			'timestamp': time.mktime(self.datetime_updated.timetuple()),
 			'category': self.category,
 			'is_read': self.is_read
 		}
