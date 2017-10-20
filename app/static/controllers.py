@@ -168,21 +168,36 @@ def index(id):
         user = session.user.get()
         args = request.args
         filter = args.get('filter', CATEGORIES[0])
+        total_count = 0
         page = args.get('page', '1')
         count = int(args.get('count', 20))
         offset = (int(page) - 1) * count
         data = []
 
         if filter in CATEGORIES[:2]:
-            data = [p.serialize() for p in list(MessagePointer.query(MessagePointer.to_recipient == session.user).fetch(count, offset=offset))]
+            data = [p.serialize()
+                    for p in list(MessagePointer.query(MessagePointer.to_recipient == session.user
+                    and MessagePointer.category == filter).fetch(count, offset=offset))]
+            total_count = MessagePointer.query(MessagePointer.to_recipient == session.user).count()
 
         elif filter in CATEGORIES[2:]:
             messages = list(Message.query(Message.from_recipient == session.user).fetch(count, offset=offset))
-            
-            for m in messages:
-                data.append(MessagePointer.query(MessagePointer.from_recipient == session.user).get().serialize())
 
-        return jsonify(data)
+            for m in messages:
+                data.append(MessagePointer.query(MessagePointer.message == m.key and MessagePointer.category == filter).get().serialize())
+
+            messages = list(Message.query(Message.from_recipient == session.user).fetch())
+
+            for m in messages:
+                total_count += MessagePointer.query(MessagePointer.message == m.key and MessagePointer.category == filter).count()
+
+        response = {
+            'filter': filter,
+            'total_count': total_count,
+            'messages': [m.serialize() for m in data]
+        }
+        
+        return jsonify(response)
 
     except Exception as e:
         return get_status_code(401)
