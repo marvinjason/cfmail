@@ -175,15 +175,16 @@ def index(id):
         total_count = 0
 
         if filter in CATEGORIES[:2]:
-            data = MessagePointer.query(ndb.AND(MessagePointer.to_recipient == session.user, MessagePointer.category == filter))
-            data = data.order(MessagePointer.datetime_created).fetch(count, offset=offset)
-            total_count = MessagePointer.query(MessagePointer.to_recipient == session.user).count()
+            data = MessagePointer.query(ndb.AND(MessagePointer.to_recipient == session.user, MessagePointer.category == filter)).fetch(count, offset=offset)
+            # data = data.order(MessagePointer.datetime_created).fetch(count, offset=offset)
+            total_count = MessagePointer.query(ndb.AND(MessagePointer.to_recipient == session.user, MessagePointer.category == filter)).count()
         elif filter in CATEGORIES[2:]:
-            messages = Message.query(Message.from_recipient == session.user).order(Message.datetime_created).fetch(count, offset=offset)
+            messages = Message.query(Message.from_recipient == session.user).fetch(count, offset=offset) #.order(Message.datetime_created).
+
             for m in messages:
                 pointer = MessagePointer.query(ndb.AND(MessagePointer.message == m.key, MessagePointer.category == filter)).get()
                 data += [pointer] if pointer else []
-                
+
             messages = Message.query(Message.from_recipient == session.user).fetch()
 
             for m in messages:
