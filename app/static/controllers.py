@@ -242,7 +242,7 @@ def update(user_id, pointer_id):
         if not pointer:
             return get_status_code(404)
 
-        if data['is_read']:
+        if str(data['is_read']):
             pointer.is_read = data['is_read']
             
         if data['category']:
@@ -251,8 +251,8 @@ def update(user_id, pointer_id):
         pointer.put()
 
         return jsonify(pointer.serialize())
-    except:
-        return get_status_code(401)
+    except Exception as e:
+        return str(e)#get_status_code(401)
 
 
 @messages.route('/users/<user_id>/messages/<pointer_id>', methods=['DELETE'])
