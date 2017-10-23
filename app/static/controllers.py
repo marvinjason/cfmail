@@ -163,7 +163,7 @@ def index(id):
         session = authenticate()
 
         if session.user.id() != long(id):
-            raise KeyError()
+            return get_status_code(401)
 
         user = session.user.get()
         args = request.args
@@ -191,6 +191,9 @@ def index(id):
                 pointer = MessagePointer.query(ndb.AND(MessagePointer.message == m.key, MessagePointer.category == filter)).get()
                 total_count += 1 if pointer else 0
 
+        else:
+            return get_status_code(400)
+
         response = {
             'filter': filter,
             'total_count': total_count,
@@ -216,11 +219,37 @@ def show(user_id, pointer_id):
         pointer.is_read = True
         pointer.put()
 
-        return jsonify(pointer.serialize(exclude=['datetime_created', 'datetime_updated', 'from_recipient', 'category', 'message', 'to_recipient']))
+        return jsonify(pointer.serialize(exclude=['datetime_created', 'datetime_updated', 'from_recipient', 'message', 'to_recipient']))
 
     except Exception as e:
         return get_status_code(404)
 # End of def show
+
+@messages.route('/users/<user_id>/messages/<pointer_id>', methods=['PUT'])
+def update(user_id, pointer_id):
+    try:
+        session = authenticate()
+
+        if not session:
+            return get_status_code(403)
+
+        if session.user.id() != long(user_id):
+            return get_status_code(401)
+
+        data = request.get_json()
+        pointer = ndb.Key('MessagePointer', long(pointer_id)).get()
+
+        if not pointer:
+            return get_status_code(404)
+
+        pointer.is_read = data['is_read']
+        pointer.category = data['category']
+        pointer.put()
+
+        return jsonify(pointer.serialize())
+    except:
+        return get_status_code(401)
+
 
 @messages.route('/users/<user_id>/messages/<pointer_id>', methods=['DELETE'])
 def destroy(user_id, pointer_id):
@@ -273,7 +302,7 @@ def create(id):
                     message_recipients.append(
                         MessagePointer(
                             message=message.key,
-                            category='inbox',
+                            category=CATEGORIES[2],
                             to_recipient=user.key
                         ).put()
                     )

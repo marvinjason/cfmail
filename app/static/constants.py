@@ -3,7 +3,7 @@ from pycountry import countries
 
 SEXES = ('male', 'female')
 COUNTRIES = tuple([c.name for c in list(countries)])
-MESSAGE_CATEGORIES = ('inbox', 'trash', 'drafts', 'sent')
+MESSAGE_CATEGORIES = ('inbox', 'trash', 'draft', 'sent')
 
 STATUS_CODES = {
     200: {
