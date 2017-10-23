@@ -242,10 +242,10 @@ def update(user_id, pointer_id):
         if not pointer:
             return get_status_code(404)
 
-        if str(data['is_read']):
+        if 'is_read' in data:
             pointer.is_read = data['is_read']
             
-        if data['category']:
+        if 'category' in data:
             pointer.category = data['category']
 
         pointer.put()
