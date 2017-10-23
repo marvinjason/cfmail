@@ -100,6 +100,7 @@ class MessagePointer(ndb.Model):
 
 	message = ndb.KeyProperty(kind='Message')
 	datetime_updated = ndb.DateTimeProperty(auto_now=True)
+	datetime_created = ndb.DateTimeProperty(auto_now_add=True)
 	to_recipient = ndb.KeyProperty(kind='User')
 	category = ndb.StringProperty(default=CATEGORIES[0], choices=CATEGORIES)
 	is_read = ndb.BooleanProperty(default=False)

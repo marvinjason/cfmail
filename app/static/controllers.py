@@ -176,7 +176,7 @@ def index(id):
 
         if filter in CATEGORIES[:2]:
             data = MessagePointer.query(ndb.AND(MessagePointer.to_recipient == session.user, MessagePointer.category == filter))
-                .order(-MessagePointer.datetime_updated).fetch(count, offset=offset)
+                .order(-MessagePointer.datetime_created).fetch(count, offset=offset)
             total_count = MessagePointer.query(MessagePointer.to_recipient == session.user).count()
 
         elif filter in CATEGORIES[2:]:
