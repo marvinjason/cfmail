@@ -242,8 +242,12 @@ def update(user_id, pointer_id):
         if not pointer:
             return get_status_code(404)
 
-        pointer.is_read = data['is_read']
-        pointer.category = data['category']
+        if data['is_read']:
+            pointer.is_read = data['is_read']
+            
+        if data['category']:
+            pointer.category = data['category']
+
         pointer.put()
 
         return jsonify(pointer.serialize())
