@@ -15,4 +15,10 @@ indexes:
   - name: category
   - name: to_recipient
   - name: datetime_created
+
+- kind: MessagePointer
+  properties:
+  - name: category
+  - name: to_recipient
+  - name: datetime_created
     direction: desc
