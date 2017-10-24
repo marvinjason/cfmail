@@ -3,7 +3,8 @@ from pycountry import countries
 
 SEXES = ('male', 'female')
 COUNTRIES = tuple([c.name for c in list(countries)])
-MESSAGE_CATEGORIES = ('inbox', 'trash', 'drafts', 'sent')
+MESSAGE_CATEGORIES = ('inbox', 'trash', 'draft', 'sent')
+MESSENGER_ROLES = ('receiver', 'sender')
 
 STATUS_CODES = {
     200: {
@@ -44,6 +45,11 @@ STATUS_CODES = {
     404: {
         'category': 'Client Error',
         'message': 'Not Found'
+    },
+
+    405: {
+        'category': 'Client Error',
+        'message': 'Method Not Allowed'
     },
 
     409: {

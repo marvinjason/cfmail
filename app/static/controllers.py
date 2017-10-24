@@ -67,7 +67,7 @@ def update(id):
     try:
         session = authenticate()
 
-        if session.user.id() != int(id):
+        if session.user.id() != long(id):
             raise KeyError()
 
         data = request.get_json()
@@ -238,7 +238,7 @@ def destroy(user_id, pointer_id):
             return get_status_code(401)
     except Exception as e:
         return get_status_code(404)
-
+# End of def destroy
 
 @messages.route('/users/<id>/messages', methods=['POST'])
 def create(id):
@@ -295,5 +295,31 @@ def create(id):
 
     except Exception as e:
         return str(e) #get_status_code(400)
+# End of def created
 
+@messages.route('/users/<user_id>/messages/<pointer_id>', methods=['PUT'])
+def update(id, pointer_id):
+    try:
+        session = authenticate()
+
+        if not session:
+            return get_status_code(403)
+
+        if session.user.id() != long(user_id):
+            return get_status_code(401)
+
+        data = request.get_json()
+        pointer = ndb.Key('MessagePointer', long(pointer_id)).get()
+
+        if not pointer:
+            return get_status_code(404)
+
+        pointer.category = data['category']
+        pointer.put()
+
+        return jsonify(pointer.serialize())
+
+    except Exception as e:
+        #return str(e)
+        return get_status_code(401)
 # End of Messages Controller

@@ -1,6 +1,8 @@
+# Imports:
 from flask import Flask
-from static.models import User
-from static.controllers import users, sessions, messages
+from static.controllers.messages_controller import messages
+from static.controllers.sessions_controller import sessions
+from static.controllers.users_controller import users
 
 app = Flask(__name__)
 app.register_blueprint(users, url_prefix='/api/v1')
